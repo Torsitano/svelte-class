@@ -3,19 +3,9 @@
     let password: string
     let passwordRepeat: string
 
-    const onChangePassword = (event: any) => {
-        password = event.target.value
-        refreshDisabled()
-    }
-
-    const onChangePasswordRepeat = (event: any) => {
-        passwordRepeat = event.target.value
-        refreshDisabled()
-    }
-
-    const refreshDisabled = () => {
-        disabled = password === passwordRepeat
-    }
+    // Reactive
+    $: disabled =
+        password && passwordRepeat ? password !== passwordRepeat : true
 </script>
 
 <h1>Sign Up</h1>
@@ -26,9 +16,17 @@
 <input id="e-mail" />
 
 <label for="password">Password</label>
-<input id="password" type="password" on:input={onChangePassword} />
+<input
+    id="password"
+    type="password"
+    on:input={(event) => (password = event.currentTarget.value)}
+/>
 
 <label for="password-repeat">Repeat Password</label>
-<input id="password-repeat" type="password" on:input={onChangePasswordRepeat} />
+<input
+    id="password-repeat"
+    type="password"
+    on:input={(event) => (passwordRepeat = event.currentTarget.value)}
+/>
 
 <button {disabled}>Sign Up</button>
