@@ -10,12 +10,7 @@
     $: disabled =
         password && passwordRepeat ? password !== passwordRepeat : true
 
-    type ButtonClick = MouseEvent & {
-        currentTarget: EventTarget & HTMLButtonElement
-    }
-
-    const submit = (event: ButtonClick) => {
-        event.preventDefault()
+    const submit = () => {
         axios.post("/api/1.0/users", { username, email, password })
     }
 </script>
@@ -35,5 +30,5 @@
     <label for="password-repeat">Repeat Password</label>
     <input id="password-repeat" type="password" bind:value={passwordRepeat} />
 
-    <button {disabled} on:click={submit}>Sign Up</button>
+    <button {disabled} on:click|preventDefault={submit}>Sign Up</button>
 </form>
