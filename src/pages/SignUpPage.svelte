@@ -10,8 +10,16 @@
     $: disabled =
         password && passwordRepeat ? password !== passwordRepeat : true
 
-    const submit = () => {
+    const submit = async () => {
         axios.post("/api/1.0/users", { username, email, password })
+
+        // fetch("/api/1.0/users", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify({ username, email, password }),
+        // })
     }
 </script>
 

@@ -2,7 +2,10 @@ import SignUpPage from './SignUpPage.svelte'
 import { render, screen } from '@testing-library/svelte'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
-import axios from 'axios'
+import 'whatwg-fetch'
+import { setupServer } from 'msw/node'
+import { rest } from 'msw'
+
 
 describe( 'Sign Up Page', () => {
     describe( 'Layout', () => {
@@ -74,7 +77,19 @@ describe( 'Sign Up Page', () => {
 
         } )
 
+
+
         it( 'sends username, email, and password to backend after clicking button', async () => {
+            let requestBody: any
+
+            const server = setupServer(
+                rest.post( '/api/1.0/users', async ( req, res, context ) => {
+                    requestBody = req.json()
+                    return res( context.status( 200 ) )
+                } )
+            )
+
+            server.listen()
             render( SignUpPage )
             const usernameInput: HTMLInputElement = screen.getByLabelText( 'Username' )
             const emailInput: HTMLInputElement = screen.getByLabelText( 'E-mail' )
@@ -87,17 +102,14 @@ describe( 'Sign Up Page', () => {
             await userEvent.type( passwordRepeatInput, 'P4ssword' )
             const button = screen.getByRole( 'button', { name: 'Sign Up' } )
 
-            const mockFn = jest.fn()
-            axios.post = mockFn
-
             await userEvent.click( button )
-            const firstCall = mockFn.mock.calls[ 0 ]
 
-            const body = firstCall[ 1 ]
-            expect( body ).toEqual( {
+            await server.close()
+
+            expect( await requestBody ).toEqual( {
                 username: 'user1',
                 email: 'user1@email.com',
-                password: 'P4ssword'
+                password: 'P4ssword',
             } )
 
         } )
