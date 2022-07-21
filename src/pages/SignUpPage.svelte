@@ -19,20 +19,54 @@
     }
 </script>
 
-<h1>Sign Up</h1>
+<div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2">
+    <form class="card mt-5">
+        <div class="card-header">
+            <h1 class="text-center">Sign Up</h1>
+        </div>
 
-<form>
-    <label for="username">Username</label>
-    <input id="username" bind:value={username} />
+        <div class="card-body">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input
+                    id="username"
+                    class="form-control"
+                    bind:value={username}
+                />
+            </div>
 
-    <label for="e-mail">E-mail</label>
-    <input id="e-mail" bind:value={email} />
+            <div class="form-group">
+                <label for="e-mail">E-mail</label>
+                <input id="e-mail" class="form-control" bind:value={email} />
+            </div>
 
-    <label for="password">Password</label>
-    <input id="password" type="password" bind:value={password} />
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                    id="password"
+                    type="password"
+                    class="form-control"
+                    bind:value={password}
+                />
+            </div>
 
-    <label for="password-repeat">Repeat Password</label>
-    <input id="password-repeat" type="password" bind:value={passwordRepeat} />
+            <div class="form-group">
+                <label for="password-repeat">Repeat Password</label>
+                <input
+                    id="password-repeat"
+                    type="password"
+                    class="form-control"
+                    bind:value={passwordRepeat}
+                />
+            </div>
 
-    <button {disabled} on:click|preventDefault={submit}>Sign Up</button>
-</form>
+            <div class="text-center">
+                <button
+                    class="btn btn-primary"
+                    {disabled}
+                    on:click|preventDefault={submit}>Sign Up</button
+                >
+            </div>
+        </div>
+    </form>
+</div>
