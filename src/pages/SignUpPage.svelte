@@ -10,7 +10,11 @@
     $: disabled =
         password && passwordRepeat ? password !== passwordRepeat : true
 
+    let apiProgress = false
     const submit = async () => {
+        disabled = true
+        apiProgress = true
+
         axios.post("/api/1.0/users", {
             username,
             email,
@@ -31,8 +35,7 @@
                 <input
                     id="username"
                     class="form-control"
-                    bind:value={username}
-                />
+                    bind:value={username} />
             </div>
 
             <div class="form-group">
@@ -46,8 +49,7 @@
                     id="password"
                     type="password"
                     class="form-control"
-                    bind:value={password}
-                />
+                    bind:value={password} />
             </div>
 
             <div class="form-group">
@@ -56,16 +58,20 @@
                     id="password-repeat"
                     type="password"
                     class="form-control"
-                    bind:value={passwordRepeat}
-                />
+                    bind:value={passwordRepeat} />
             </div>
 
             <div class="text-center">
                 <button
                     class="btn btn-primary"
                     {disabled}
-                    on:click|preventDefault={submit}>Sign Up</button
-                >
+                    on:click|preventDefault={submit}>
+                    {#if apiProgress}
+                        <span
+                            class="spinner-border spinner-border-sm"
+                            role="status" />
+                    {/if}
+                    Sign Up</button>
             </div>
         </div>
     </form>
