@@ -7,15 +7,21 @@
         username: string,
         email: string
 
+    interface ValidationErrors {
+        username?: string
+        email?: string
+        password?: string
+    }
+
     // Reactive
     $: disabled =
         password && passwordRepeat ? password !== passwordRepeat : true
 
     let apiProgress = false
     let signUpSuccess = false
+    let errors: ValidationErrors = {}
 
     const submit = () => {
-        disabled = true
         apiProgress = true
         axios
             .post("/api/1.0/users", {
@@ -27,8 +33,13 @@
                 signUpSuccess = true
             })
             //@ts-ignore
-            .catch((err) => {
-                console.log("There was an error")
+            .catch((error) => {
+                apiProgress = false
+                if (error.response.status === 400) {
+                    if (error.response.data.validationErrors) {
+                        errors = error.response.data.validationErrors
+                    }
+                }
             })
     }
 </script>
@@ -47,6 +58,9 @@
                         id="username"
                         class="form-control"
                         bind:value={username} />
+                    {#if errors.username}
+                        <span role="alert">{errors.username}</span>
+                    {/if}
                 </div>
 
                 <div class="form-group">
@@ -78,7 +92,7 @@
                 <div class="text-center">
                     <button
                         class="btn btn-primary"
-                        {disabled}
+                        disabled={disabled || apiProgress}
                         on:click|preventDefault={submit}>
                         {#if apiProgress}
                             <span
