@@ -1,6 +1,5 @@
 <script lang="ts">
     import axios from "axios"
-    import type { AxiosResponse } from "axios"
 
     let disabled = true
     let password: string,
@@ -12,20 +11,18 @@
     $: disabled =
         password && passwordRepeat ? password !== passwordRepeat : true
 
-    let apiProgress: Promise<AxiosResponse<any, any>>
-
+    let apiProgress = false
     let signUpSuccess = false
 
     const submit = () => {
         disabled = true
-
-        apiProgress = axios.post("/api/1.0/users", {
-            username,
-            email,
-            password,
-        })
-
-        apiProgress
+        apiProgress = true
+        axios
+            .post("/api/1.0/users", {
+                username,
+                email,
+                password,
+            })
             .then(() => {
                 signUpSuccess = true
             })
@@ -83,11 +80,11 @@
                         class="btn btn-primary"
                         {disabled}
                         on:click|preventDefault={submit}>
-                        {#await apiProgress}
+                        {#if apiProgress}
                             <span
                                 class="spinner-border spinner-border-sm"
                                 role="status" />
-                        {/await}
+                        {/if}
 
                         Sign Up</button>
                 </div>

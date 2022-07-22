@@ -65,12 +65,37 @@ describe( 'Sign Up Page', () => {
 
     describe( 'Interactions', () => {
 
+        let requestBody: any
+        let counter = 0
+
+        const server = setupServer(
+            rest.post( '/api/1.0/users', async ( req, res, context ) => {
+                requestBody = req.json()
+                counter += 1
+                await new Promise( ( resolve ) => setTimeout( resolve, 50 ) )
+
+                return res( context.status( 200 ) )
+            } )
+        )
+
+        beforeAll( () => server.listen() )
+
+        beforeEach( () => {
+            counter = 0
+            server.resetHandlers()
+        } )
+
+        afterAll( () => server.close() )
+
+        let button: HTMLElement
+
         const setup = async () => {
             render( SignUpPage )
             const usernameInput: HTMLInputElement = screen.getByLabelText( 'Username' )
             const emailInput: HTMLInputElement = screen.getByLabelText( 'E-mail' )
             const passwordInput: HTMLInputElement = screen.getByLabelText( 'Password' )
             const passwordRepeatInput: HTMLInputElement = screen.getByLabelText( 'Repeat Password' )
+            button = screen.getByRole( 'button', { name: 'Sign Up' } )
 
             await userEvent.type( usernameInput, 'user1' )
             await userEvent.type( emailInput, 'user1@email.com' )
@@ -81,31 +106,15 @@ describe( 'Sign Up Page', () => {
 
         it( 'enables the button when the password and password repeat fields have same value', async () => {
             await setup()
-
-            const button = screen.getByRole( 'button', { name: 'Sign Up' } )
             expect( button ).toBeEnabled()
 
         } )
 
 
-
         it( 'sends username, email, and password to backend after clicking button', async () => {
-            let requestBody: any
-
-            const server = setupServer(
-                rest.post( '/api/1.0/users', async ( req, res, context ) => {
-                    requestBody = req.json()
-                    return res( context.status( 200 ) )
-                } )
-            )
-
-            server.listen()
-
             await setup()
-
-            const button = screen.getByRole( 'button', { name: 'Sign Up' } )
             await userEvent.click( button )
-            await server.close()
+            await screen.findByText( 'Please check your e-mail to activate your account' )
 
             expect( await requestBody ).toEqual( {
                 username: 'user1',
@@ -116,50 +125,26 @@ describe( 'Sign Up Page', () => {
         } )
 
         it( 'disables the button when there is an ongoing api call', async () => {
-            let counter = 0
-
-            const server = setupServer(
-                //@ts-ignore
-                rest.post( '/api/1.0/users', async ( req, res, context ) => {
-                    counter += 1
-                    return res( context.status( 200 ) )
-                } )
-            )
-
-            server.listen()
 
             await setup()
 
-
-            const button = screen.getByRole( 'button', { name: 'Sign Up' } )
             await userEvent.click( button )
             await userEvent.click( button )
 
-            await server.close()
+            await screen.findByText( 'Please check your e-mail to activate your account' )
 
             expect( counter ).toBe( 1 )
 
         } )
 
+
         it( 'displays spinner while the API request is in progress', async () => {
-
-            const server = setupServer(
-                //@ts-ignore
-                rest.post( "/api/1.0/users", async ( req, res, ctx ) => {
-                    await new Promise( ( resolve ) => setTimeout( resolve, 50 ) )
-                    return res( ctx.status( 200 ) )
-                } )
-            )
-
-            server.listen()
             await setup()
 
-            const button = screen.getByRole( 'button', { name: 'Sign Up' } )
             await userEvent.click( button )
 
             const spinner = screen.getByRole( 'status' )
             expect( spinner ).toBeInTheDocument()
-            await server.close()
         } )
 
 
@@ -169,26 +154,16 @@ describe( 'Sign Up Page', () => {
             expect( spinner ).not.toBeInTheDocument()
         } )
 
+
         it( 'displays account activation information after successful sign up request', async () => {
-
-            const server = setupServer(
-                //@ts-ignore
-                rest.post( '/api/1.0/users', async ( req, res, context ) => {
-                    //await new Promise( ( resolve ) => setTimeout( resolve, 50 ) )
-                    return res( context.status( 200 ) )
-                } )
-            )
-
-            server.listen()
             await setup()
 
-            const button = screen.getByRole( 'button', { name: 'Sign Up' } )
             await userEvent.click( button )
-            await server.close()
 
             const text = await screen.findByText( 'Please check your e-mail to activate your account' )
             expect( text ).toBeInTheDocument()
         } )
+
 
         it( 'does not display account activation message before sign up request', async () => {
             await setup()
@@ -197,51 +172,16 @@ describe( 'Sign Up Page', () => {
         } )
 
 
-
-
-        it( "hides sign up form after successful sign up request", async () => {
-            const server = setupServer(
-                //@ts-ignore
-                rest.post( "/api/1.0/users", ( req, res, ctx ) => {
-                    return res( ctx.status( 200 ) )
-                } )
-            )
-
-
-            console.log( 'in server' )
-
-            server.listen()
-            await setup()
-            const button = screen.getByRole( "button", { name: "Sign Up" } )
-
-            const form = screen.getByTestId( 'form-sign-up' )
-
-
-            await userEvent.click( button )
-            await server.close()
-
-            await waitFor( () => {
-                expect( form ).not.toBeInTheDocument()
-            } )
-        } )
-
-        xit( "does not display account activation information after failing sign up request", async () => {
-            const server = setupServer(
+        it( "does not display account activation information after failing sign up request", async () => {
+            server.use(
                 //@ts-ignore
                 rest.post( "/api/1.0/users", ( req, res, ctx ) => {
                     return res( ctx.status( 400 ) )
                 } )
             )
 
-
-            console.log( 'in server' )
-
-            server.listen()
             await setup()
-            const button = screen.getByRole( "button", { name: "Sign Up" } )
-
             await userEvent.click( button )
-            await server.close()
 
             const text = screen.queryByText(
                 "Please check your e-mail to activate your account"
@@ -249,6 +189,16 @@ describe( 'Sign Up Page', () => {
             expect( text ).not.toBeInTheDocument()
         } )
 
-    } )
 
+        it( "hides sign up form after successful sign up request", async () => {
+            await setup()
+
+            const form = screen.getByTestId( 'form-sign-up' )
+            await userEvent.click( button )
+
+            await waitFor( () => {
+                expect( form ).not.toBeInTheDocument()
+            } )
+        } )
+    } )
 } )
