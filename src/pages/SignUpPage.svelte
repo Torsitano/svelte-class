@@ -14,9 +14,13 @@
         password?: string
     }
 
+    let passwordMismatch = false
+
     // Reactive
     $: disabled =
         password && passwordRepeat ? password !== passwordRepeat : true
+
+    $: passwordMismatch = password !== passwordRepeat
 
     let apiProgress = false
     let signUpSuccess = false
@@ -54,49 +58,50 @@
 
             <div class="card-body">
                 <Input
-                    id="Username"
+                    id="username"
                     label="Username"
                     help={errors.username}
-                    bind:entry={username} />
+                    bind:value={username}
+                />
 
-                <div class="form-group">
-                    <label for="e-mail">E-mail</label>
-                    <input
-                        id="e-mail"
-                        class="form-control"
-                        bind:value={email} />
-                </div>
+                <Input
+                    id="e-mail"
+                    label="E-mail"
+                    help={errors.email}
+                    bind:value={email}
+                />
 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input
-                        id="password"
-                        type="password"
-                        class="form-control"
-                        bind:value={password} />
-                </div>
+                <Input
+                    id="password"
+                    label="Password"
+                    help={errors.password}
+                    bind:value={password}
+                    type="password"
+                />
 
-                <div class="form-group">
-                    <label for="password-repeat">Repeat Password</label>
-                    <input
-                        id="password-repeat"
-                        type="password"
-                        class="form-control"
-                        bind:value={passwordRepeat} />
-                </div>
+                <Input
+                    id="password-repeat"
+                    label="Repeat Password"
+                    help={passwordMismatch ? "Password mismatch" : ""}
+                    bind:value={passwordRepeat}
+                    type="password"
+                />
 
                 <div class="text-center">
                     <button
                         class="btn btn-primary"
                         disabled={disabled || apiProgress}
-                        on:click|preventDefault={submit}>
+                        on:click|preventDefault={submit}
+                    >
                         {#if apiProgress}
                             <span
                                 class="spinner-border spinner-border-sm"
-                                role="status" />
+                                role="status"
+                            />
                         {/if}
 
-                        Sign Up</button>
+                        Sign Up</button
+                    >
                 </div>
             </div>
         </form>
