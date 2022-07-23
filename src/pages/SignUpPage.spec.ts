@@ -87,11 +87,11 @@ describe( 'Sign Up Page', () => {
 
         afterAll( () => server.close() )
 
-        let button: HTMLElement, passwordInput: HTMLElement, passwordRepeatInput: HTMLElement
+        let button: HTMLElement, usernameInput: HTMLElement, passwordInput: HTMLElement, passwordRepeatInput: HTMLElement
 
         const setup = async () => {
             render( SignUpPage )
-            const usernameInput: HTMLInputElement = screen.getByLabelText( 'Username' )
+            usernameInput = screen.getByLabelText( 'Username' )
             const emailInput: HTMLInputElement = screen.getByLabelText( 'E-mail' )
             passwordInput = screen.getByLabelText( 'Password' )
             passwordRepeatInput = screen.getByLabelText( 'Repeat Password' )
@@ -272,6 +272,31 @@ describe( 'Sign Up Page', () => {
         it( 'does not display mismatch message initially', () => {
             render( SignUpPage )
             const validationError = screen.queryByText( 'Password mismatch' )
+            expect( validationError ).not.toBeInTheDocument()
+
+        } )
+
+        interface ValidationUpdatedTestParams {
+            field: string,
+            message: string,
+            label: string
+        }
+
+        it.each`
+        field         | message                      | label
+        ${'username'} | ${'Username cannot be null'} | ${'Username'}
+        ${'email'}    | ${'Email cannot be null'}    | ${'E-mail'}
+        ${'password'} | ${'Password cannot be null'} | ${'Password'}
+        `( "clears validation error after $field field is updated", async ( { field, message, label }: ValidationUpdatedTestParams ) => {
+            server.use( generateValidationError( field, message ) )
+
+            await setup()
+            await userEvent.click( button )
+
+            const validationError = await screen.findByText( message )
+            const input = screen.getByLabelText( label )
+            await userEvent.type( input, 'updated' )
+
             expect( validationError ).not.toBeInTheDocument()
 
         } )
